@@ -26,19 +26,34 @@ if uploaded_product_list and uploaded_price_list:
     st.write("Product list columns:", df.columns.tolist())
     st.write("Price list columns:", df2.columns.tolist())
     
+    # Add USD exchange rate input
+    st.subheader("USD Exchange Rate")
+    usd_price = st.number_input(
+        "Enter the USD to local currency exchange rate:", 
+        min_value=1, 
+        value=1000,  # Default value as int
+        step=1,
+        format="%d",  # Force integer format
+        help="This rate will be used to convert prices in USD to local currency."
+    )
+    st.write(f"Current USD exchange rate: {int(usd_price)}")
+
     if st.button("Update Prices"):
-        # Create a dictionary mapping SKU to Precio Venta
         sku_to_precio = dict(zip(df2["Ítem"], df2["Precio Venta"]))
-        
-        # Update the "Precio" column in the product list based on matching SKU
+
         for idx, row in df.iterrows():
             sku = row["SKU (OBLIGATORIO)"]
             if sku in sku_to_precio:
                 price = sku_to_precio[sku]
                 if isinstance(price, str):
-                    # Convert price from string format to integer
-                    price_str = price.replace('$', '').replace('.', '').replace(',', '.').strip()
-                    sku_to_precio[sku] = int(float(price_str))
+                    tipo_moneda = price.split()[0]
+                    if tipo_moneda == 'U$S':
+                        updated_price = int(float(price.split()[1].replace('.', '')) * usd_price)
+                        updated_price = ((updated_price + 99) // 100) * 100
+                    else:
+                        price_str = price.replace('$', '').replace('.', '').replace(',', '.').strip()
+                        updated_price = int(float(price_str))
+                    sku_to_precio[sku] = updated_price
                 df.at[idx, "Precio"] = sku_to_precio[sku]
         
         # Display the updated product list
@@ -59,3 +74,4 @@ if uploaded_product_list and uploaded_price_list:
         )
 else:
     st.info("Please upload both the product list and price list files to proceed.")
+
