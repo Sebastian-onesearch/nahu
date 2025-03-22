@@ -48,7 +48,7 @@ if uploaded_product_list and uploaded_price_list:
                 if isinstance(price, str):
                     tipo_moneda = price.split()[0]
                     if tipo_moneda == 'U$S':
-                        updated_price = int(float(price.split()[1].replace('.', '')) * usd_price)
+                        updated_price = int(float(price.split()[1].replace('.', '').replace(',','.')) * usd_price)
                         updated_price = ((updated_price + 99) // 100) * 100
                     else:
                         price_str = price.replace('$', '').replace('.', '').replace(',', '.').strip()
